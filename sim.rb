@@ -42,12 +42,17 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
                                 left: j*CELL_WIDTH,
                                 width: CELL_WIDTH,
                                 height: CELL_HEIGHT
-
       end
-    end    
+    end  
   end
 
   def clear_screen
+    contents = @main_stack.contents
+    parent = @main_stack.parent
+    debug "Contents: #{contents}"
+    debug "Main Stack: #{@main_stack}"
+    debug "Parent : #{parent.inspect}"
+    debug "Parent Contents : #{parent.contents}"
     @main_stack.clear
   end
 
@@ -135,7 +140,10 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
         clear_screen
         draw_screen
         update_info Time.now - t
-      end        
+      end  
+      button "Clear" do
+        clear_screen
+      end      
     end
   end
 end
