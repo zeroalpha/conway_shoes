@@ -1,8 +1,12 @@
-MAP_HEIGHT = 10
-MAP_WIDTH = 10
+MAP_HEIGHT = 25
+MAP_WIDTH = 50
+
+TOTAL_CELLS = MAP_HEIGHT * MAP_WIDTH
 
 CELL_WIDTH = 10
 CELL_HEIGHT = 10
+
+PADDING = 10
 
 CTRL_HEIGHT = 200
 CTRL_WIDTH = MAP_WIDTH * CELL_WIDTH
@@ -10,8 +14,8 @@ CTRL_WIDTH = MAP_WIDTH * CELL_WIDTH
 SCREEN_HEIGHT = MAP_HEIGHT * CELL_HEIGHT
 SCREEN_WIDTH = CTRL_WIDTH
 
-WINDOW_WIDTH = CTRL_WIDTH
-WINDOW_HEIGHT = SCREEN_HEIGHT + CTRL_HEIGHT
+WINDOW_WIDTH = SCREEN_WIDTH + PADDING * 2
+WINDOW_HEIGHT = SCREEN_HEIGHT + CTRL_HEIGHT + PADDING * 2
 
 Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true do
 
@@ -41,14 +45,11 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
         else
 
           stroke black
-
           if cell[:alive] == 1 then
             fill black
           else
             fill white
           end
-
-          #fill white
           cell[:rect] = rect top: i*CELL_HEIGHT,
                              left: j*CELL_WIDTH,
                              width: CELL_WIDTH,
@@ -124,26 +125,41 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
     (x >= 0 && y >= 0) && (x < MAP_WIDTH && y < MAP_HEIGHT)
   end
 
-  t = Time.now
+  def step
+    t = Time.now
+    update_life
+    draw_screen
+    update_info Time.now - t
+  end
+
   @map = seed_map(MAP_WIDTH, MAP_HEIGHT)
   @alive = 0
-  debug "#{MAP_WIDTH}x#{MAP_HEIGHT} : #{Time.now - t}s"
-
-  stack(width: WINDOW_WIDTH, height: WINDOW_HEIGHT) do
+  #stack(width: WINDOW_WIDTH, height: WINDOW_HEIGHT,top: PADDING, left: PADDING) do
+  flow(top: PADDING, left: PADDING) do
     @main_stack = stack(width: SCREEN_WIDTH, height: SCREEN_HEIGHT) do
       draw_screen
     end
-    @control_stack = stack(width: CTRL_WIDTH, height: CTRL_HEIGHT) do
-      total = MAP_HEIGHT * MAP_WIDTH
-      @info_para = para "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{total - @alive} (#{total})\nTime used: n/A"
+    #@control_stack = flow(width: CTRL_WIDTH, height: CTRL_HEIGHT) do
+    @control_stack = stack do
+      @info_para = para "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{TOTAL_CELLS - @alive} (#{TOTAL_CELLS})\nTime used: n/A"
       button "Step" do
-        t = Time.now
-        update_life
-        draw_screen
-        update_info Time.now - t
+        step
       end
-      button "Clear" do
-        clear_screen
+      button "Restart" do
+        @map = seed_map MAP_WIDTH, MAP_HEIGHT
+        draw_screen
+      end
+      button "Cycle" do
+        if not @timer then
+          @timer = every(0.5) do
+            step
+          end
+        else
+          @timer.start
+        end
+      end
+      button "Stop" do
+        @timer.stop if @timer
       end
     end
   end
