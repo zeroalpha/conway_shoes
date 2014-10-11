@@ -1,5 +1,5 @@
-MAP_HEIGHT = 20
-MAP_WIDTH = 50
+MAP_HEIGHT = 10
+MAP_WIDTH = 10
 
 CELL_WIDTH = 10
 CELL_HEIGHT = 10
@@ -13,7 +13,7 @@ SCREEN_WIDTH = CTRL_WIDTH
 WINDOW_WIDTH = CTRL_WIDTH
 WINDOW_HEIGHT = SCREEN_HEIGHT + CTRL_HEIGHT
 
-Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true do 
+Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true do
 
   def seed_map(width, height)
     ret = []
@@ -22,38 +22,40 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
       width.times do
         ret[-1] << {alive: rand(2), rect: nil}
       end
-    end   
-    return ret 
+    end
+    return ret
   end
 
   def draw_screen
     @map.size.times do |i|
       @map[0].size.times do |j|
-        stroke black
-
-        if @map[i][j][:alive] == 1 then
-          fill black
+        cell = @map[i][j]
+        if r = cell[:rect] then
+          new_style = r.style.dup
+          if cell[:alive] == 1 then
+            new_style[:fill] = black
+          else
+            new_style[:fill] = white
+          end
+          r.style new_style
         else
-          fill white
+
+          stroke black
+
+          if cell[:alive] == 1 then
+            fill black
+          else
+            fill white
+          end
+
+          #fill white
+          cell[:rect] = rect top: i*CELL_HEIGHT,
+                             left: j*CELL_WIDTH,
+                             width: CELL_WIDTH,
+                             height: CELL_HEIGHT
         end
-
-        #fill white
-        @map[i][j][:rect] = rect top: i*CELL_HEIGHT, 
-                                left: j*CELL_WIDTH,
-                                width: CELL_WIDTH,
-                                height: CELL_HEIGHT
       end
-    end  
-  end
-
-  def clear_screen
-    contents = @main_stack.contents
-    parent = @main_stack.parent
-    debug "Contents: #{contents}"
-    debug "Main Stack: #{@main_stack}"
-    debug "Parent : #{parent.inspect}"
-    debug "Parent Contents : #{parent.contents}"
-    @main_stack.clear
+    end
   end
 
   def count_alive_neighbours(cell_x,cell_y)
@@ -75,11 +77,11 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
   end
 
   def live(cell_x,cell_y)
-    alive_neighbours = count_alive_neighbours cell_x,cell_y 
+    alive_neighbours = count_alive_neighbours cell_x,cell_y
     cell_alive = @map[cell_y][cell_x][:alive]
     if cell_alive == 1 then
       #CELL IS ALIVE
-      case 
+      case
       when alive_neighbours < 2
         #Dies
         @map[cell_y][cell_x][:alive] = 0
@@ -93,8 +95,8 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
       #CELL IS DEAD
       if alive_neighbours == 3 then
         #Revive
-        @map[cell_y][cell_x][:alive] = 1 
-        cell_alive = 1 
+        @map[cell_y][cell_x][:alive] = 1
+        cell_alive = 1
       end
     end
     cell_alive
@@ -126,24 +128,23 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
   @map = seed_map(MAP_WIDTH, MAP_HEIGHT)
   @alive = 0
   debug "#{MAP_WIDTH}x#{MAP_HEIGHT} : #{Time.now - t}s"
-  
+
   stack(width: WINDOW_WIDTH, height: WINDOW_HEIGHT) do
     @main_stack = stack(width: SCREEN_WIDTH, height: SCREEN_HEIGHT) do
       draw_screen
     end
-    @control_stack = stack(width: CTRL_WIDTH, height: CTRL_HEIGHT) do 
+    @control_stack = stack(width: CTRL_WIDTH, height: CTRL_HEIGHT) do
       total = MAP_HEIGHT * MAP_WIDTH
       @info_para = para "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{total - @alive} (#{total})\nTime used: n/A"
       button "Step" do
         t = Time.now
         update_life
-        clear_screen
         draw_screen
         update_info Time.now - t
-      end  
+      end
       button "Clear" do
         clear_screen
-      end      
+      end
     end
   end
 end
