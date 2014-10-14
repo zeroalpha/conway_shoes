@@ -31,6 +31,8 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
   end
 
   def draw_screen
+    x = @map[0].size
+    y = @map.size
     @map.size.times do |i|
       @map[0].size.times do |j|
         cell = @map[i][j]
@@ -138,32 +140,64 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
   @map = seed_map(MAP_WIDTH, MAP_HEIGHT)
   @alive = 0
   #stack(width: WINDOW_WIDTH, height: WINDOW_HEIGHT,top: PADDING, left: PADDING) do
-  flow(top: PADDING, left: PADDING) do
-    @main_stack = stack(width: SCREEN_WIDTH, height: SCREEN_HEIGHT) do
+  stack(margin: PADDING) do
+    @main_flow = stack(width: SCREEN_WIDTH, height: SCREEN_HEIGHT) do
       draw_screen
     end
-    #@control_stack = flow(width: CTRL_WIDTH, height: CTRL_HEIGHT) do
-    @control_stack = stack do
-      @info_para = para "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{TOTAL_CELLS - @alive} (#{TOTAL_CELLS})\nTime used: n/A"
-      button "Step" do
-        step
+
+    @control_flow = flow do
+      flow do
+        @info_para = para "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{TOTAL_CELLS - @alive} (#{TOTAL_CELLS})\nTime used: n/A"
       end
-      button "Restart" do
-        @map = seed_map MAP_WIDTH, MAP_HEIGHT
-        draw_screen
-      end
-      button "Cycle" do
-        if not @timer then
-          @timer = every(0.5) do
-            step
-          end
-        else
-          @timer.start
+
+      flow do
+        button "Step" do
+          step
         end
-      end
-      button "Stop" do
-        @timer.stop if @timer
-      end
+        button "Restart" do
+          @map = seed_map MAP_WIDTH, MAP_HEIGHT
+          draw_screen
+        end
+        button "Cycle" do
+          if not @timer then
+            @timer = every(0.5) do
+              step
+            end
+          else
+            @timer.start
+          end
+        end
+        button "Stop" do
+          @timer.stop if @timer
+        end 
+      end     
     end
+
+    #@info_stack = stack(align: "left", margin: PADDING) do
+    #  @info_para = para "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{TOTAL_CELLS - @alive} (#{TOTAL_CELLS})\nTime used: n/A"
+    #end
+
+    #@control_stack = flow(width: CTRL_WIDTH, height: CTRL_HEIGHT) do
+    #@control_stack = stack(align: "right", margin: PADDING) do
+    #  button "Step" do
+    #    step
+    #  end
+    #  button "Restart" do
+    #    @map = seed_map MAP_WIDTH, MAP_HEIGHT
+    #    draw_screen
+    #  end
+    #  button "Cycle" do
+    #    if not @timer then
+    #      @timer = every(0.5) do
+    #        step
+    #      end
+    #    else
+    #      @timer.start
+    #    end
+    #  end
+    #  button "Stop" do
+    #    @timer.stop if @timer
+    #  end
+    #end
   end
 end
