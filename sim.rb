@@ -115,9 +115,9 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
 
   end
 
-  def update_info(runtime)
-    total = MAP_HEIGHT * MAP_WIDTH
-    @info_para.text = "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{total - @alive} (#{total})\nTime used: #{runtime}"
+  def update_info(t_life,t_draw)
+    total = TOTAL_CELLS
+    @info_para.text = "#{MAP_WIDTH}x#{MAP_HEIGHT}\nAlive : #{@alive}/#{total - @alive} (#{total})\nt_life: #{t_life}\nt_draw: #{t_draw}"
 
   end
 
@@ -126,10 +126,13 @@ Shoes.app :width => WINDOW_WIDTH, :height => WINDOW_HEIGHT, :resizable => true d
   end
 
   def step
-    t = Time.now
+    t_life = Time.now
     update_life
+    t_life = Time.now - t_life
+    t_draw = Time.now
     draw_screen
-    update_info Time.now - t
+    t_draw = Time.now - t_draw
+    update_info t_life, t_draw
   end
 
   @map = seed_map(MAP_WIDTH, MAP_HEIGHT)
